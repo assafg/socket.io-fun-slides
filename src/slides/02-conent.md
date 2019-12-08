@@ -73,6 +73,103 @@
 
 ---
 
+## Server
+
+```javascript
+io.on('connect', (socket) => {
+    socket.emmit('hello');
+
+    socket.on('disconnect', function(){
+        // cleanup
+    });
+
+    socket.on('some-message', (data) => {
+        // Do something with the data
+    })
+});
+```
+
+---
+
+## Client
+
+```javascript
+const socket = io('http://server-url');
+socket.on('message', (msg) => {
+    //do something with msg
+
+    //...
+    socket.emit('some-message', clientMessage)
+});
+
+//...
+socket.emit('another-message', anotherClientMessage);
+```
+
+---
+
+## Namespaces
+
+```javascript
+// Server
+var io = require('socket.io')(80);
+var chat = io
+  .of('/chat')
+  .on('connection', function (socket) {
+    socket.emit('a message', {
+        that: 'only'
+      , '/chat': 'will get'
+    });
+    chat.emit('a message', {
+        everyone: 'in'
+      , '/chat': 'will get'
+    });
+  });
+
+var news = io
+  .of('/news')
+  .on('connection', function (socket) {
+    socket.emit('item', { news: 'item' });
+  });
+```
+
+---
+
+## Namespaces - cont.
+
+```javascript
+// Client
+const chat = io.connect('http://localhost/chat')
+    , news = io.connect('http://localhost/news');
+  
+chat.on('connect', function () {
+    chat.emit('hi!');
+});
+  
+news.on('news', function () {
+    news.emit('woot');
+});
+```
+---
+
+## Rooms - withing a Namespace
+
+```javascript
+io.on('connection', function(socket){
+
+  // ...
+
+  socket.join('some room');
+});
+
+// ...
+
+io.to('some room').emit('some event');
+
+```
+
+---
+
 Socket.io cheatsheet
 
 ```javascript
@@ -101,12 +198,6 @@ function onConnect(socket){
   // sending to a specific room in a specific namespace, including sender
   io.of('myNamespace').to('room').emit('event', 'message');
 
-  // sending to individual socketid (private message)
-  io.to(`${socketId}`).emit('hey', 'I just met you');
-
-  // WARNING: `socket.to(socket.id).emit()` will NOT work, as it will send to everyone in the room
-  // named `socket.id` but the sender. Please use the classic `socket.emit()` instead.
-
   // sending with acknowledgement
   socket.emit('question', 'do you think so?', function (answer) {});
 
@@ -132,7 +223,7 @@ function onConnect(socket){
 
 # Demo
 
-[react-redux-socket.io](https://github.com/assafg/react-redux-socket.io/pull/2)
+[react-redux-socket.io](https://github.com/assafg/react-redux-socket.io)
 
 ----
 
